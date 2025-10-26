@@ -15,7 +15,7 @@ class ErrorResponse(BaseModel):
     message: str
 
 
-def success_response(status_code: int = status.HTTP_200_OK, data: Optional[dict] = None) -> JSONResponse:
+def success_response(status_code: int = status.HTTP_200_OK, data: Optional[dict | list] = None) -> JSONResponse:
 
     response = {}
 

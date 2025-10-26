@@ -1,6 +1,8 @@
+from datetime import datetime
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, String, event
+from sqlalchemy import Integer, String, event, func, null, text, TIMESTAMP
+from sqlalchemy.types import DateTime
 from src.utils.database import Base
 from uuid import UUID
 import uuid
@@ -9,30 +11,15 @@ import random
 
 
 class CountryData(Base):
-    __tablename__ = "country's data"
+    __tablename__ = "countries_data"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4())
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    capital: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    region: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    id: Mapped[str] = mapped_column(String(225), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name: Mapped[str] = mapped_column(String(150), nullable=False, index=True)
+    capital: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)
+    region: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)
     population: Mapped[int] = mapped_column(Integer, nullable=False)
-    currency_code: Mapped[str] = mapped_column(String, nullable=True)
-    exchange_rate: Mapped[int] = mapped_column(Integer, nullable=True)
+    currency_code: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    exchange_rate: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     estimated_gdp: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-
-    def calculate_estimated_gdp(self):
-        if self.population and self.exchange_rate and self.exchange_rate != 0:
-            multiplier = random.randint(1000,2000)
-            self.estimated_gdp = int((self.population * multiplier) / self.exchange_rate)
-        
-        else:
-            self.estimated_gdp = None
-
-
-@event.listens_for(CountryData, "before_insert")
-def before_insert_listener(mapper, connection, target):
-    target.calculate_estimated_gdp()
-
-@event.listens_for(CountryData, "before_update")
-def before_update_listener(mapper, connection, target):
-    target.calculate_estimated_gdp()
+    flag_url: Mapped[Optional[str]]= mapped_column(String(225), nullable=True)
+    last_refreshed_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"), server_onupdate=text("CURRENT_TIMESTAMP"))

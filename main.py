@@ -10,7 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHttpException
 
 from src.responses.responses import ErrorResponse, ValidationErrorResponse
 from src.responses.responses import success_response
-
+from src.routes.country import country
 
 app = FastAPI(
         title="Country, Currency & Exchange",
@@ -20,6 +20,7 @@ app = FastAPI(
 
 Base.metadata.create_all(engine)
 
+app.include_router(country)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
@@ -34,8 +35,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         err.get("loc")[0] == "query" for err in exc.errors()
     )
 
-    is_missing_field = any(
-        err.get("type") in ["value_error.missing", "missing"] for err in exc.errors()
+    is_missing_field = any (err.get("type") in ["value_error.missing", "missing"] for err in exc.errors()
     )
 
     if is_missing_field or is_query_param_error:
@@ -54,8 +54,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(StarletteHttpException)
 async def starlette_http_handler(request: Request, exc: StarletteHttpException) -> JSONResponse:
-    response: ErrorResponse = ErrorResponse(status_code=exc.status_code, message=exc.detail)
-    return JSONResponse(content=response.model_dump(), status_code=exc.status_code)
+    
+    return JSONResponse(content=exc.detail, status_code=exc.status_code)
 
 
 @app.exception_handler(FastAPIError)
@@ -72,5 +72,5 @@ async def welcome():
     return JSONResponse(status_code=200, content={"message": "welcome to my APi"})
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=int(os.environ.get("PORT", 8000)), reload=True )
+    uvicorn.run("main:app", host="127.0.0.1", port=int(os.environ.get("PORT", 5000)), reload=True )
 
